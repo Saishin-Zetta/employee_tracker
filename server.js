@@ -1,6 +1,5 @@
 const inquirer = require('inquirer');
-const mysql = require('mysql');
-const express = require(`express`)
+const mysql = require('mysql2');
 const cTable = require('console.table')
 
 const db = mysql.createConnection({
@@ -10,9 +9,8 @@ const db = mysql.createConnection({
     database: "blackCompany_db"
 });
 
-console.log(db.database.department)
-
-// make a function so you can call your way back to the beginning
+// function that allows for callback once a prompt is completed
+function startup() {
 inquirer
     .prompt([
         {
@@ -20,7 +18,7 @@ inquirer
             message: 'What would you like to do?',
             name: 'database_choice',
             choices: [
-                `view all departments`,
+                `view all department`,
                 `view all roles`,
                 `view all employees`,
                 `add a department`,
@@ -30,21 +28,22 @@ inquirer
         },
     ])
     .then((answer) => {
-        console.log(answer)
-        if (answer.database_choice === `view all departments`) {
-            db.query(`SELECT * FROM department`, function (err, res) {
-                console.log(`here`)
+        if (answer.database_choice === `view all department`) {
+            db.query(`SELECT * FROM department`, (err, res) => {
                 err ? console.error(err) : console.table(res)
+                startup()
             })
         }
         else if (answer.database_choice === `view all roles`) {
-            db.query(`SELECT * FROM roles`, function (err, res) {
+            db.query(`SELECT * FROM roles`, (err, res) => {
                 err ? console.error(err) : console.table(res)
+                startup()
             })
         }
         else if (answer.database_choice === `view all employees`) {
-            db.query(`SELECT * FROM employees`, function (err, res) {
+            db.query(`SELECT * FROM employees`, (err, res) => {
                 err ? console.error(err) : console.table(res)
+                startup()
             })
         }
         else if (answer.database_choice === `add a department`) {
@@ -58,11 +57,10 @@ inquirer
 
                 ])
                 .then((answers) => {
-                    // make a function out of the first inquirer to take you back to the prompt
-                    // make a function that will allow you to see the newly updated table
-                    db.query(`INSERT INTO (department_name) department VALUES (${answers.new_department})`, function (err, res) {               
-                        
-                        return console.table(res)
+                    db.query(`INSERT INTO department (department_name) VALUES ("${answers.new_department}")`, (err, res) => {               
+                        console.log(answers.new_department)
+                        err ? console.error(err) : console.table(res)
+                        startup()
                     })
                 })
            
@@ -88,8 +86,9 @@ inquirer
 
                 ])
                 .then((answers) => {
-                    db.query(`INSERT INTO (job_title, department, salary) roles VALUES (${answers.new_role}, ${answers.department}, ${answers.salary}) `, function (err, res) {
-                        return console.log(res)
+                    db.query(`INSERT INTO roles (job_title, department, salary) VALUES ("${answers.new_role}", "${answers.department}", "${answers.salary}")`, (err, res) => {
+                        err ? console.error(err) : console.table(res)
+                        startup()
                     })
                 })
         }
@@ -119,11 +118,16 @@ inquirer
 
                 ])
                 .then((answers) => {
-                    db.query(`INSERT INTO (first_name, last_name, job_title, manager) employees VALUES (${answers.first_name}, ${answers.last_name}, ${answers.job_title}, ${answers.manager})`, function (err, res) { 
-                        return console.log(res)
+                    db.query(`INSERT INTO employees (first_name, last_name, job_title, manager) VALUES ("${answers.first_name}", "${answers.last_name}", "${answers.job_title}", "${answers.manager}")`, (err, res) => { 
+                        err ? console.error(err) : console.table(res)
+                        startup()
                     })
                 })
         }
         else if (answer.database_choice === `update an employee job title`) { }
-
+        // prompting the first_name and last_name of employee
+        // function that deletes the current job
+        // function that ask what their new job should be and INSERTS it
     })
+}
+startup()

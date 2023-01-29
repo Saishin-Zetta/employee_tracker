@@ -76,7 +76,7 @@ inquirer
                     {
                         type: 'input',
                         message: 'what department is this new role in?',
-                        name: 'department',
+                        name: 'department_id',
                     },
                     {
                         type: 'input',
@@ -86,7 +86,7 @@ inquirer
 
                 ])
                 .then((answers) => {
-                    db.query(`INSERT INTO roles (job_title, department, salary) VALUES ("${answers.new_role}", "${answers.department}", "${answers.salary}")`, (err, res) => {
+                    db.query(`INSERT INTO roles (job_title, department_id, salary) VALUES ("${answers.new_role}", "${answers.department_id}", "${answers.salary}")`, (err, res) => {
                         err ? console.error(err) : console.table(res)
                         startup()
                     })
@@ -108,24 +108,51 @@ inquirer
                     {
                         type: 'input',
                         message: 'what is the role/job title of the new employee?',
-                        name: 'job_title',
+                        name: 'roles_id',
                     },
                     {
                         type: 'input',
                         message: 'who is the manager of the new employee?',
-                        name: 'manager',
+                        name: 'manager_id',
                     },
 
                 ])
                 .then((answers) => {
-                    db.query(`INSERT INTO employees (first_name, last_name, job_title, manager) VALUES ("${answers.first_name}", "${answers.last_name}", "${answers.job_title}", "${answers.manager}")`, (err, res) => { 
+                    db.query(`INSERT INTO employees (first_name, last_name, roles_id, manager_id) VALUES ("${answers.first_name}", "${answers.last_name}", ${answers.roles_id}, ${answers.manager_id})`, (err, res) => { 
                         err ? console.error(err) : console.table(res)
                         startup()
                     })
                 })
         }
-        else if (answer.database_choice === `update an employee job title`) { }
-        // prompting the first_name and last_name of employee
+        else if (answer.database_choice === `update an employee role`) {
+            inquirer
+                .prompt([
+                    {
+                        type:'input',
+                        message:'what is the id of the employee you wish to change?',
+                        name:'employee_id'
+                    },
+                    {
+                        type:'input',
+                        message:'what is the role you would like to change the employee to?',
+                        name:'changing_role'
+                    },
+                ])
+                .then((answers) => {
+                    // db.query(`Select (${answers.employee_id}) FROM employees`), (err, res) => { 
+                    //     err ? console.error(err) : console.table(res)
+                    // }
+                    // db.query(`Delete From employees WHERE (roles_id)`), (err, res) => { 
+                    //     err ? console.error(err) : console.table(res)
+                    // }
+                    db.query(`UPDATE employees set roles_id = ${answers.changing_role} WHERE id = ${answers.employee_id}`), (err, res) => { 
+                        err ? console.error(err) : console.table(res)
+                    }
+                    startup()
+                    // WHERE id = ${answers.employee_id} VALUES (${answers.employee_id},"John","Doe", ${answers.changing_role}, 1)
+                })
+        }
+        // prompting the id "what is the id of the employee you wish to change?"
         // function that deletes the current job
         // function that ask what their new job should be and INSERTS it
     })
